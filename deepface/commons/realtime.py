@@ -9,9 +9,9 @@ import re
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-from deepface.basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
-from deepface.extendedmodels import Age, Gender, Race, Emotion
-from deepface.commons import functions, realtime, distance as dst
+from ..basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
+from ..extendedmodels import Age, Gender, Race, Emotion
+from . import functions, realtime, distance as dst
 
 def analysis(db_path, model_name, distance_metric, enable_face_analysis = True):
 	

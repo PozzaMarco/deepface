@@ -16,10 +16,9 @@ import keras
 import tensorflow as tf
 import pickle
 
-from deepface import DeepFace
-from deepface.basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
-from deepface.extendedmodels import Age, Gender, Race, Emotion
-from deepface.commons import functions, realtime, distance as dst
+from .basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
+from .extendedmodels import Age, Gender, Race, Emotion
+from .commons import functions, realtime, distance as dst
 
 def verify(img1_path, img2_path = '', model_name ='VGG-Face', distance_metric = 'cosine', model = None, enforce_detection = True, detector_backend = 'opencv'):
 
@@ -876,3 +875,5 @@ def allocateMemory():
 
 functions.initializeFolder()
 
+def deepHello():
+	print("hello from deepFace")

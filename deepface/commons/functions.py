@@ -17,7 +17,7 @@ import subprocess
 import tensorflow as tf
 import keras
 import bz2
-from deepface.commons import distance
+from . import distance
 from mtcnn import MTCNN #0.1.0
 
 def loadBase64Img(uri):
