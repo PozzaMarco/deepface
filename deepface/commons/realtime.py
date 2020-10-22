@@ -13,7 +13,7 @@ from ..basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
 from ..extendedmodels import Age, Gender, Race, Emotion
 from . import functions, realtime, distance as dst
 
-def analysis(db_path, model_name, distance_metric, enable_face_analysis = True):
+def analysis(db_path, model_name, distance_metric, enable_face_analysis = False):
 	
 	input_shape = (224, 224)
 	input_shape_x = input_shape[0]; input_shape_y = input_shape[1]
@@ -386,7 +386,11 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = True):
 								best_distance = candidate['distance']
 								
 								#print(candidate[['employee', 'distance']].values)
-								
+								print("""
+									Best distance: %s
+									Threshold: %s
+									Is better: %s
+								""" %(str(best_distance), str(threshold), str(best_distance<=threshold)))
 								#if True:
 								if best_distance <= threshold:
 									#print(employee_name)
@@ -455,7 +459,10 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = True):
 											cv2.line(freeze_img, (x+int(w/2)+int(w/4), y+h+int(pivot_img_size/2)), (x+w, y+h+int(pivot_img_size/2)), (67,67,67),1)
 									except Exception as err:
 										print(str(err))
-						
+
+								else:
+									print("Not recognized face")
+									#TODO Logic to scan and save new face
 						tic = time.time() #in this way, freezed image can show 5 seconds
 						
 						#-------------------------------
@@ -464,7 +471,7 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = True):
 				
 				cv2.rectangle(freeze_img, (10, 10), (90, 50), (67,67,67), -10)
 				cv2.putText(freeze_img, str(time_left), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-				
+
 				cv2.imshow('img', freeze_img)
 				
 				freezed_frame = freezed_frame + 1

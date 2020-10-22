@@ -874,6 +874,3 @@ def allocateMemory():
 #main
 
 functions.initializeFolder()
-
-def deepHello():
-	print("hello from deepFace")
