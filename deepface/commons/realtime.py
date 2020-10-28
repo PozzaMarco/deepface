@@ -630,7 +630,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 		# save the image with the vector representation
 		add_to_feature_dict(person_name, img_representation, feature_dict)
 
-	avg_features = extracted_features_mean(feature_dict) # average feature's values foreach detected face
+	avg_features = extracted_features_mean(feature_dict) # average the feature's values foreach detected face
 	
 	df = pd.DataFrame(avg_features, columns = ['face_image', 'feature'])
 	df['distance_metric'] = distance_metric
@@ -725,7 +725,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 						%(str(best_distance), str(threshold), str(best_distance<=threshold))
 						)
 						try: 
-							if best_distance <= threshold: # if I found a known face --> green frame arround it													
+							if best_distance <= threshold: # if I found a known face --> green frame around it													
 								label = employee_name.split("/")[-1].replace(".jpg", "")
 								label = re.sub('[0-9]', '', label)	
 								label = label.upper()
@@ -739,7 +739,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 									
 								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
-							else: # if I didnt find a known face --> red frame arround it
+							else: # if I didnt find a known face --> red frame around it
 								cv2.rectangle(frame, (x,y), (x+w,y+h), (0, 0, 179), 2)
 								label = "UNKNOW"
 								half_w = int(w/4)
@@ -749,6 +749,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
 									
 								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
+								#TODO save new faces, compute the new feature extraction, add them to the dataFrame to perform the recognition
 
 						except Exception as err:
 							print(str(err))
