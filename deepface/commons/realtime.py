@@ -662,7 +662,6 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 				
 				face_detected = True
 				
-				cv2.rectangle(frame, (x,y), (x+w,y+h), (67,67,67), 1) #draw rectangle to main image
 				detected_face = frame[int(y):int(y+h), int(x):int(x+w)] #crop detected face
 				
 				#-------------------------------------
@@ -711,77 +710,35 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 						""" 
 						%(str(best_distance), str(threshold), str(best_distance<=threshold))
 						)
-						#if True:
-						if best_distance <= threshold:
-							display_frame = cv2.imread(employee_name)
-							
-							display_frame = cv2.resize(display_frame, (pivot_frame_size, pivot_frame_size))
-																
-							label = employee_name.split("/")[-1].replace(".jpg", "")
-							label = re.sub('[0-9]', '', label)
-							
-							try:
-								if y - pivot_frame_size > 0 and x + w + pivot_frame_size < resolution_x:
-									#top right
-									frame[y - pivot_frame_size:y, x+w:x+w+pivot_frame_size] = display_frame
-									
-									overlay = frame.copy(); opacity = 0.4
-									cv2.rectangle(frame,(x+w,y),(x+w+pivot_frame_size, y+20),(46,200,255),cv2.FILLED)
-									cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
-									
-									cv2.putText(frame, label, (x+w, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-									
-									#connect face and text
-									cv2.line(frame,(x+int(w/2), y), (x+3*int(w/4), y-int(pivot_frame_size/2)),(67,67,67),1)
-									cv2.line(frame, (x+3*int(w/4), y-int(pivot_frame_size/2)), (x+w, y - int(pivot_frame_size/2)), (67,67,67),1)
-									
-								elif y + h + pivot_frame_size < resolution_y and x - pivot_frame_size > 0:
-									#bottom left
-									frame[y+h:y+h+pivot_frame_size, x-pivot_frame_size:x] = display_frame
-									
-									overlay = frame.copy(); opacity = 0.4
-									cv2.rectangle(frame,(x-pivot_frame_size,y+h-20),(x, y+h),(46,200,255),cv2.FILLED)
-									cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
-									
-									cv2.putText(frame, label, (x - pivot_frame_size, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-									
-									#connect face and text
-									cv2.line(frame,(x+int(w/2), y+h), (x+int(w/2)-int(w/4), y+h+int(pivot_frame_size/2)),(67,67,67),1)
-									cv2.line(frame, (x+int(w/2)-int(w/4), y+h+int(pivot_frame_size/2)), (x, y+h+int(pivot_frame_size/2)), (67,67,67),1)
-									
-								elif y - pivot_frame_size > 0 and x - pivot_frame_size > 0:
-									#top left
-									frame[y-pivot_frame_size:y, x-pivot_frame_size:x] = display_frame
-									
-									overlay = frame.copy(); opacity = 0.4
-									cv2.rectangle(frame,(x- pivot_frame_size,y),(x, y+20),(46,200,255),cv2.FILLED)
-									cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
-									
-									cv2.putText(frame, label, (x - pivot_frame_size, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-									
-									#connect face and text
-									cv2.line(frame,(x+int(w/2), y), (x+int(w/2)-int(w/4), y-int(pivot_frame_size/2)),(67,67,67),1)
-									cv2.line(frame, (x+int(w/2)-int(w/4), y-int(pivot_frame_size/2)), (x, y - int(pivot_frame_size/2)), (67,67,67),1)
-									
-								elif x+w+pivot_frame_size < resolution_x and y + h + pivot_frame_size < resolution_y:
-									#bottom righ
-									frame[y+h:y+h+pivot_frame_size, x+w:x+w+pivot_frame_size] = display_frame
-									
-									overlay = frame.copy(); opacity = 0.4
-									cv2.rectangle(frame,(x+w,y+h-20),(x+w+pivot_frame_size, y+h),(46,200,255),cv2.FILLED)
-									cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
-									
-									cv2.putText(frame, label, (x+w, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-									
-									#connect face and text
-									cv2.line(frame,(x+int(w/2), y+h), (x+int(w/2)+int(w/4), y+h+int(pivot_frame_size/2)),(67,67,67),1)
-									cv2.line(frame, (x+int(w/2)+int(w/4), y+h+int(pivot_frame_size/2)), (x+w, y+h+int(pivot_frame_size/2)), (67,67,67),1)
-							except Exception as err:
-								print(str(err))
+						try: 
+							if best_distance <= threshold: # if I found a known face --> green frame arround it													
+								label = employee_name.split("/")[-1].replace(".jpg", "")
+								label = re.sub('[0-9]', '', label)	
+								label = label.upper()
+								cv2.rectangle(frame, (x,y), (x+w,y+h), (51, 204, 51), 2)
 
-						else:
-							print("Not recognized face")
-							#TODO Logic to scan and save new face
+								half_w = int(w/4)
+
+								overlay = frame.copy(); opacity = 0.4
+								cv2.rectangle(frame,(x+half_w,y),(x+half_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
+								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
+									
+								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
+
+							else: # if I didnt find a known face --> red frame arround it
+								cv2.rectangle(frame, (x,y), (x+w,y+h), (0, 0, 179), 2)
+								label = "UNKNOW"
+								half_w = int(w/4)
+
+								overlay = frame.copy(); opacity = 0.4
+								cv2.rectangle(frame,(x+half_w,y),(x+half_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
+								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
+									
+								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
+
+						except Exception as err:
+							print(str(err))
+
 				tic = time.time() #in this way, freezed image can show 5 seconds
 
 		cv2.imshow('img',frame)
