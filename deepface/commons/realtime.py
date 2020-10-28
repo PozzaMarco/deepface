@@ -96,7 +96,7 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 		
 		toc = time.time()
 		
-		print("Facial attibute analysis models loaded in ",toc-tic," seconds")
+		print("Facial attribute analysis models loaded in ",toc-tic," seconds")
 	
 	#------------------------
 	
@@ -603,7 +603,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 		
 		toc = time.time()
 		
-		print("Facial attibute analysis models loaded in ",toc-tic," seconds")
+		print("Facial attribute analysis models loaded in ",toc-tic," seconds")
 	
 	#------------------------
 	
@@ -741,7 +741,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 
 							else: # if I didnt find a known face --> red frame around it
 								cv2.rectangle(frame, (x,y), (x+w,y+h), (0, 0, 179), 2)
-								label = "UNKNOW"
+								label = "UNKNOWN"
 								half_w = int(w/4)
 
 								overlay = frame.copy(); opacity = 0.4
