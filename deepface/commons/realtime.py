@@ -12,8 +12,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from ..basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID
 from ..extendedmodels import Age, Gender, Race, Emotion
 from . import functions, realtime, distance as dst
-'''
-def analysis_old(db_path, model_name, distance_metric, enable_face_analysis = False):
+
+def analysis(db_path, model_name, distance_metric, enable_face_analysis = False):
 	
 	input_shape = (224, 224)
 	input_shape_x = input_shape[0]; input_shape_y = input_shape[1]
@@ -100,31 +100,31 @@ def analysis_old(db_path, model_name, distance_metric, enable_face_analysis = Fa
 	
 	#------------------------
 	
-	#find embeddings for employee list
+	#find features for employee list
 	
 	tic = time.time()
 	
-	pbar = tqdm(range(0, len(employees)), desc='Finding embeddings')
+	pbar = tqdm(range(0, len(employees)), desc='Finding features')
 	
-	embeddings = []
+	features = []
 	#for employee in employees:
 	for index in pbar:
 		employee = employees[index]
-		pbar.set_description("Finding embedding for %s" % (employee.split("/")[-1]))
-		embedding = []
+		pbar.set_description("Finding feature for %s" % (employee.split("/")[-1]))
+		feature = []
 		img = functions.preprocess_face(img = employee, target_size = (input_shape_y, input_shape_x), enforce_detection = False)
 		img_representation = model.predict(img)[0,:]
 		
-		embedding.append(employee)
-		embedding.append(img_representation)
-		embeddings.append(embedding)
+		feature.append(employee)
+		feature.append(img_representation)
+		features.append(feature)
 	
-	df = pd.DataFrame(embeddings, columns = ['employee', 'embedding'])
+	df = pd.DataFrame(features, columns = ['employee', 'feature'])
 	df['distance_metric'] = distance_metric
 	
 	toc = time.time()
 	
-	print("Embeddings found for given data set in ", toc-tic," seconds")
+	print("features found for given data set in ", toc-tic," seconds")
 	
 	#-----------------------
 
@@ -366,7 +366,7 @@ def analysis_old(db_path, model_name, distance_metric, enable_face_analysis = Fa
 								
 								def findDistance(row):
 									distance_metric = row['distance_metric']
-									img2_representation = row['embedding']
+									img2_representation = row['feature']
 									
 									distance = 1000 #initialize very large value
 									if distance_metric == 'cosine':
@@ -462,7 +462,6 @@ def analysis_old(db_path, model_name, distance_metric, enable_face_analysis = Fa
 
 								else:
 									print("Not recognized face")
-									#TODO Logic to scan and save new face
 						tic = time.time() #in this way, freezed image can show 5 seconds
 						
 						#-------------------------------
@@ -490,9 +489,9 @@ def analysis_old(db_path, model_name, distance_metric, enable_face_analysis = Fa
 	#kill open cv things		
 	cap.release()
 	cv2.destroyAllWindows()
-'''
-def generate_embedding(face_image, shape_y, shape_x, model):
-	embedding = []
+
+def generate_feature(face_image, shape_y, shape_x, model):
+	feature = []
 
 	# detect and align face
 	img = functions.preprocess_face(img = face_image, target_size = (shape_y, shape_x), enforce_detection = False)
@@ -501,12 +500,27 @@ def generate_embedding(face_image, shape_y, shape_x, model):
 	img_representation = model.predict(img)[0,:]
 	
 	# save the image with the vector representation
-	embedding.append(face_image)
-	embedding.append(img_representation)
+	feature.append(face_image)
+	feature.append(img_representation)
 
-	return embedding
+	return feature
 
-def analysis(db_path, model_name, distance_metric, enable_face_analysis = False):
+def add_to_feature_dict(key, img_representation, feature_dict):
+	if key in feature_dict:
+		feature_dict[key].append(img_representation)
+	else:
+		feature_dict[key] = [img_representation]
+
+def extracted_features_mean(feature_dict):
+	feature_list = []
+
+	for key in feature_dict:
+		features = np.array(feature_dict[key])
+		feature_list.append([key, np.mean(features, axis = 0)])
+	
+	return feature_list
+		
+def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis = False):
 	
 	input_shape = (224, 224)
 	input_shape_x = input_shape[0]; input_shape_y = input_shape[1]
@@ -593,18 +607,19 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 	
 	#------------------------
 	
-	#find embeddings for employee list
+	#find features for employee list
 	
 	tic = time.time()
 	
-	pbar = tqdm(range(0, len(face_images)), desc='Finding embeddings')
+	pbar = tqdm(range(0, len(face_images)), desc='Finding features')
 	
-	embeddings = []
+	feature_dict = {}
+
 	for index in pbar:
 		face_image = face_images[index]
-		pbar.set_description("Finding embedding for %s" % (face_image.split("/")[-1]))
-
-		embedding = []
+		image_description = face_image.split("/")
+		person_name = image_description[1]
+		pbar.set_description("Finding feature for %s" % image_description[1])
 
 		# detect and align face
 		img = functions.preprocess_face(img = face_image, target_size = (input_shape_y, input_shape_x), enforce_detection = False)
@@ -613,17 +628,16 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 		img_representation = model.predict(img)[0,:]
 		
 		# save the image with the vector representation
-		embedding.append(face_image)
-		embedding.append(img_representation)
+		add_to_feature_dict(person_name, img_representation, feature_dict)
 
-		embeddings.append(embedding) 
+	avg_features = extracted_features_mean(feature_dict) # average feature's values foreach detected face
 	
-	df = pd.DataFrame(embeddings, columns = ['face_image', 'embedding'])
+	df = pd.DataFrame(avg_features, columns = ['face_image', 'feature'])
 	df['distance_metric'] = distance_metric
 	
 	toc = time.time()
 	
-	print("Embeddings found for given data set in ", toc-tic," seconds")
+	print("features found for given data set in ", toc-tic," seconds")
 	
 	#-----------------------
 
@@ -683,7 +697,7 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 						
 						def findDistance(row):
 							distance_metric = row['distance_metric']
-							img2_representation = row['embedding']
+							img2_representation = row['feature']
 							
 							distance = 1000 #initialize very large value
 							if distance_metric == 'cosine':
@@ -749,3 +763,4 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 	#kill open cv things		
 	cap.release()
 	cv2.destroyAllWindows()
+	
