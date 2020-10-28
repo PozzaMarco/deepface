@@ -863,8 +863,11 @@ def find(img_path, db_path, model_name ='VGG-Face', distance_metric = 'cosine', 
 		
 	return None
 	
-def stream(db_path = '', model_name ='VGG-Face', distance_metric = 'cosine', enable_face_analysis = True):
-	realtime.analysis(db_path, model_name, distance_metric, enable_face_analysis)
+def stream(db_path = '', model_name ='VGG-Face', distance_metric = 'cosine', enable_face_analysis = True, real_time = False):
+	if(real_time):
+		realtime.realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis)
+	else:
+		realtime.analysis(db_path, model_name, distance_metric, enable_face_analysis)
 
 def allocateMemory():
 	print("Analyzing your system...")
