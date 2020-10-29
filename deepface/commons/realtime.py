@@ -531,7 +531,7 @@ def save_new_detected_face(new_face, folder_name = ""):
 	if(not os.path.isdir(dir_path)):
 		os.makedirs(dir_path)
 
-	count = len(os.listdir(dir_path)) + 1
+	count = len(os.listdir(dir_path))%30 + 1
 
 	cv2.imwrite(os.path.join(dir_path, str(folder_name)+str(count)+".jpg"), new_face)
 	return folder_name
@@ -764,9 +764,10 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 									
 								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
-								n_undetected = 0											
-								if(count_faces(best_candidate) < 15): #TODO is useful???!?? Maybe better keep replace old photoes with new one
-									save_new_detected_face(new_face, best_candidate)
+								n_undetected = 0
+								new_face = frame_cpy[y:y+h,x:x+w]											
+								#if(count_faces(best_candidate) < 15): #TODO is useful???!?? Maybe better keep replace old photoes with new one
+								save_new_detected_face(new_face, best_candidate)
 
 							else: # if I didn't find a known face --> red frame around it
 								frame_cpy = frame.copy()
@@ -780,10 +781,9 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 									
 								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
-								#TODO save new faces, compute the new feature extraction, add them to the dataFrame to perform the recognition
 								if(n_undetected > 20):
 									new_face = frame_cpy[y:y+h,x:x+w]
-									folder_name = save_new_detected_face(new_face, input("Name"))
+									folder_name = save_new_detected_face(new_face, input("Not Recognized. Type a Name--> "))
 
 									img = functions.preprocess_face(img = new_face, target_size = (input_shape_y, input_shape_x), enforce_detection = False)
 
