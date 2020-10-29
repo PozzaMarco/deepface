@@ -765,8 +765,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
 								n_undetected = 0
-								new_face = frame_cpy[y:y+h,x:x+w]											
-								#if(count_faces(best_candidate) < 15): #TODO is useful???!?? Maybe better keep replace old photoes with new one
+								new_face = frame_cpy[y:y+h,x:x+w]
 								save_new_detected_face(new_face, best_candidate)
 
 							else: # if I didn't find a known face --> red frame around it
@@ -812,4 +811,3 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 	#kill open cv things		
 	cap.release()
 	cv2.destroyAllWindows()
-	
