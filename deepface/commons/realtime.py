@@ -141,7 +141,7 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 
 	freeze = False
 	face_detected = False
-	face_included_frames = 0 #freeze screen if face detected sequantially 5 frames
+	face_included_frames = 0 #freeze screen if face detected sequentially 5 frames
 	freezed_frame = 0
 	tic = time.time()
 
@@ -445,7 +445,7 @@ def analysis(db_path, model_name, distance_metric, enable_face_analysis = False)
 											cv2.line(img, (x+int(w/2)-int(w/4), y-int(pivot_img_size/2)), (x, y - int(pivot_img_size/2)), (67,67,67),1)
 											
 										elif x+w+pivot_img_size < resolution_x and y + h + pivot_img_size < resolution_y:
-											#bottom righ
+											#bottom right
 											img[y+h:y+h+pivot_img_size, x+w:x+w+pivot_img_size] = display_img
 											
 											overlay = img.copy(); opacity = 0.4
@@ -731,21 +731,21 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 								label = label.upper()
 								cv2.rectangle(frame, (x,y), (x+w,y+h), (51, 204, 51), 2)
 
-								half_w = int(w/4)
+								quarter_w = int(w/4)
 
 								overlay = frame.copy(); opacity = 0.4
-								cv2.rectangle(frame,(x+half_w,y),(x+half_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
+								cv2.rectangle(frame,(x+quarter_w,y),(x+quarter_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
 								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
 									
-								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
+								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
-							else: # if I didnt find a known face --> red frame around it
+							else: # if I didn't find a known face --> red frame around it
 								cv2.rectangle(frame, (x,y), (x+w,y+h), (0, 0, 179), 2)
 								label = "UNKNOWN"
-								half_w = int(w/4)
+								quarter_w = int(w/4)
 
 								overlay = frame.copy(); opacity = 0.4
-								cv2.rectangle(frame,(x+half_w,y),(x+half_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
+								cv2.rectangle(frame,(x+quarter_w,y),(x+quarter_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
 								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
 									
 								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
