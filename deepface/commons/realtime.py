@@ -519,7 +519,32 @@ def extracted_features_mean(feature_dict):
 		feature_list.append([key, np.mean(features, axis = 0)])
 	
 	return feature_list
-		
+
+def save_new_detected_face(new_face, folder_name = ""):
+	dir_path = os.path.abspath("faces_database")
+
+	if(folder_name == ""):
+		folder_name = str(len(os.listdir(dir_path)) + 1)
+
+	dir_path = os.path.join(dir_path, folder_name)
+
+	if(not os.path.isdir(dir_path)):
+		os.makedirs(dir_path)
+
+	count = len(os.listdir(dir_path)) + 1
+
+	cv2.imwrite(os.path.join(dir_path, str(folder_name)+str(count)+".jpg"), new_face)
+	return folder_name
+
+def count_faces(name):
+	dir_path = os.path.abspath("faces_database")
+	subdir_path = os.path.join(dir_path, name)
+
+	if(os.path.isdir(subdir_path)):
+		return len(os.listdir(subdir_path))
+	else:
+		return 0
+
 def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis = False):
 	
 	input_shape = (224, 224)
@@ -643,7 +668,7 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 
 	time_threshold = 5; frame_threshold = 5
 	pivot_frame_size = 112 # face recognition result image
-
+	n_undetected = 0
 	#-----------------------
 
 	
@@ -715,8 +740,8 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 						candidate = df.iloc[0]
 						employee_name = candidate['face_image']
 						best_distance = candidate['distance']
+						best_candidate = candidate['face_image']
 						
-						#print(candidate[['employee', 'distance']].values)
 						print("""
 							Best distance: %s
 							Threshold: %s
@@ -739,7 +764,12 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 									
 								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
+								n_undetected = 0											
+								if(count_faces(best_candidate) < 15): #TODO is useful???!?? Maybe better keep replace old photoes with new one
+									save_new_detected_face(new_face, best_candidate)
+
 							else: # if I didn't find a known face --> red frame around it
+								frame_cpy = frame.copy()
 								cv2.rectangle(frame, (x,y), (x+w,y+h), (0, 0, 179), 2)
 								label = "UNKNOWN"
 								quarter_w = int(w/4)
@@ -748,9 +778,27 @@ def realtime_analysis(db_path, model_name, distance_metric, enable_face_analysis
 								cv2.rectangle(frame,(x+quarter_w,y),(x+quarter_w+pivot_frame_size, y+20), (46,200,255) ,cv2.FILLED)
 								cv2.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
 									
-								cv2.putText(frame, label, (x+half_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
-								#TODO save new faces, compute the new feature extraction, add them to the dataFrame to perform the recognition
+								cv2.putText(frame, label, (x+quarter_w, y+15), cv2.FONT_HERSHEY_TRIPLEX, 0.5, text_color, 1)
 
+								#TODO save new faces, compute the new feature extraction, add them to the dataFrame to perform the recognition
+								if(n_undetected > 20):
+									new_face = frame_cpy[y:y+h,x:x+w]
+									folder_name = save_new_detected_face(new_face, input("Name"))
+
+									img = functions.preprocess_face(img = new_face, target_size = (input_shape_y, input_shape_x), enforce_detection = False)
+
+									# find the vector representation of the image detected above
+									new_face_representation = model.predict(img)[0,:]
+									
+									# save the image with the vector representation
+									add_to_feature_dict(folder_name, new_face_representation, feature_dict)
+
+									avg_features = extracted_features_mean(feature_dict) # average the feature's values foreach detected face
+								
+									df = pd.DataFrame(avg_features, columns = ['face_image', 'feature'])
+									df['distance_metric'] = distance_metric	
+									
+								n_undetected += 1
 						except Exception as err:
 							print(str(err))
 
